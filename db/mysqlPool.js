@@ -1,4 +1,4 @@
-const conn = require("mysql2");
+import conn from "mysql2";
 
 const mysqlPool = conn.createPool({
     host: "localhost",

@@ -1,10 +1,14 @@
 import express, { Router } from "express";
 import mysqlPool from "../db/mysqlPool.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+
+const secret = "ARToyShopApp";
 
 const router = express.Router();
 
 //ADD new user
-app.post("/api/add_user", async (req, res) => {
+router.post("/add_user", async (req, res) => {
     const { username, email, password, fullname, phonenumber, address } = req.body;
     console.log("Result: ", req.body);
 
@@ -38,7 +42,7 @@ app.post("/api/add_user", async (req, res) => {
 });
 
 //GET all users
-app.get("/api/get_user", (req, res) => {
+router.get("/get_user", (req, res) => {
     const sql = "SELECT user_id, username, email, password_hash FROM users";
 
     mysqlPool.query(sql, (err, results) => {
@@ -60,7 +64,7 @@ app.get("/api/get_user", (req, res) => {
 });
 
 //LOGIN API
-app.post("/api/login", (req, res) => {
+router.post("/login", (req, res) => {
     const { username, password } = req.body;
 
     if (!username || !password) {

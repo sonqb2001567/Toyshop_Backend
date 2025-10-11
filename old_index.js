@@ -1,10 +1,11 @@
 const bcrypt = require("bcryptjs");
 const express = require("express");
 const fs = require("fs");
-const conn = require("mysql2");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const secret = "ARToyShopApp";
+const conn = require("mysql2");
+
 
 const mysqlPool = conn.createPool({
     host: "localhost",
