@@ -111,7 +111,8 @@ router.post("/login", (req, res) => {
             user: {
                 id: user.user_id,
                 username: user.username,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
     });

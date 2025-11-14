@@ -5,12 +5,21 @@ const router = express.Router();
 
 //ADD a new order
 router.post("/create_new_order", (req, res) => {
-    const {user_id, total_amount, order_status, shipping_address} = req.body;
+    const {user_id, total_amount, name, phonenumber, order_status, shipping_address, additional_info, items} = req.body;
     console.log("Result:" + req.body);
 
-    const sql = "INSERT INTO orders (user_id, total_amount, order_status, shipping_address) VALUES (?, ?, ?, ?)";
+    const sql = `INSERT INTO orders (
+            user_id,
+            total_amount, 
+            customer_name, 
+            phone_number, 
+            order_status, 
+            shipping_address, 
+            additional_info
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
 
-    mysqlPool.query(sql, [user_id, total_amount, order_status, shipping_address], (err, res) => {
+    mysqlPool.query(sql, [user_id, total_amount, name, phonenumber, order_status, shipping_address, additional_info], (err, results) => {
         if (err) {
             console.error("Insert error:", err);
             return res.status(500).send({
@@ -19,18 +28,43 @@ router.post("/create_new_order", (req, res) => {
             });
         }
 
-        res.status(200).send({
-            status_code: 200,
-            message: "Order added successfully",
-            order: {
-                user_id: user_id,
-                total_amount: total_amount,
-                order_status: order_status,
-                shipping_address: shipping_address
+        const orderId = results.insertId; // Get the new order_id
+        console.log("Order created with ID:", orderId);
+
+        if (!items || items.length === 0) {
+            return res.status(200).send({
+                status_code: 200,
+                message: "Order added successfully (no items provided)",
+                order_id: orderId,
+            });
+        }
+
+        // Insert all items into order_items
+        const sqlItems = `
+            INSERT INTO order_items (order_id, toy_id, quantity, unit_price)
+            VALUES ?
+        `;
+
+        const itemValues = items.map(item => [orderId, item.toy_id, item.quantity, item.price]);
+
+        mysqlPool.query(sqlItems, [itemValues], (itemErr, itemResults) => {
+            if (itemErr) {
+                console.error("Insert items error:", itemErr);
+                return res.status(500).send({
+                    status_code: 500,
+                    message: "Database insert failed (order items)",
+                });
             }
+
+            res.status(200).send({
+                status_code: 200,
+                message: "Order and items added successfully",
+                order_id: orderId,
+                total_items_inserted: itemResults.affectedRows,
+            });
         });
     });
-})
+});
 
 //ADD items to order_items
 router.post("/add_items_to_order", (req, res) => {
@@ -39,7 +73,7 @@ router.post("/add_items_to_order", (req, res) => {
 
     const sql = "INSERT INTO order_items (order_id, toy_id, quantity, unit_price) VALUES (?, ?, ?, ?)";
 
-    mysqlPool.query(sql, [order_id, toy_id, quantity, unit_price], (err, res) => {
+    mysqlPool.query(sql, [order_id, toy_id, quantity, unit_price], (err, result) => {
         if (err) {
             console.error("Insert error:", err);
             return res.status(500).send({
@@ -95,6 +129,57 @@ router.delete("/remove_item_from_order", (req, res) => {
             status_code: 200,
             message: "Item removed from order successfully"
         });
+    });
+});
+
+//Get all orders by user_id
+router.get("/get_user_orders/:user_id", (req, res) => {
+    const { user_id } = req.params;
+
+    const sql = `
+        SELECT 
+        o.order_id,
+        o.total_amount,
+        o.order_status,
+        o.order_date,
+        o.shipping_address,
+        o.additional_info,
+        GROUP_CONCAT(
+            JSON_OBJECT(
+            'toy_name', t.name,
+            'quantity', oi.quantity,
+            'unit_price', oi.unit_price,
+            'image_file_path', t.image_file_path,
+            'thumbnail_url', t.thumbnail
+            )
+        ) AS items
+        FROM orders o
+        LEFT JOIN order_items oi ON o.order_id = oi.order_id
+        LEFT JOIN toys t ON oi.toy_id = t.toy_id
+        WHERE o.user_id = ?
+        GROUP BY o.order_id
+        ORDER BY o.order_date DESC;
+    `;
+
+    mysqlPool.query(sql, [user_id], (err, results) => {
+        if (err) {
+            console.error("Error fetching orders:", err);
+            return res.status(500).send({ message: "Database error" });
+        }
+
+        
+        const orders = results.map(row => ({
+            order_id: row.order_id,
+            total_amount: row.total_amount,
+            order_status: row.order_status,
+            order_date: row.order_date,
+            shipping_address: row.shipping_address,
+            additional_infor: row.additional_infor,
+            items: row.items ? JSON.parse(`[${row.items}]`) : [],
+            thumbnail_url: `https://fulminous-noncontemporaneously-laci.ngrok-free.dev/images${row.image_file_path}/Thumbnail.jpg`,
+        }));
+
+        res.status(200).send({ orders });
     });
 });
 

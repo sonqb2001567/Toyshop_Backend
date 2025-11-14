@@ -157,7 +157,7 @@ router.get("/get_cart/:user_id", (req, res) => {
             message: "Cart fetched successfully",
             cart: results.map(toy => ({
                 ...toy,
-                thumbnail_url: `http://192.168.100.113:2000/images${toy.image_file_path}/${toy.thumbnail}`
+                thumbnail_url: `https://fulminous-noncontemporaneously-laci.ngrok-free.dev/images${toy.image_file_path}/${toy.thumbnail}`
             }))
         });
     });

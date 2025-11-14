@@ -24,7 +24,7 @@ router.get("/get_all_toys", async (req, res) => {
             message: "Toys get successfully",
            toys: results.map(toy => ({
                 ...toy,
-                thumbnail_url: `http://192.168.100.113:2000/images${toy.image_file_path}/${toy.thumbnail}`
+                thumbnail_url: `https://fulminous-noncontemporaneously-laci.ngrok-free.dev/images${toy.image_file_path}/${toy.thumbnail}`
             }))
         });
     });
@@ -73,7 +73,7 @@ router.get("/get_toys_from/:category", async (req, res) => {
             message: "Toys get successfully",
            toys: results.map(toy => ({
                 ...toy,
-                thumbnail_url: `http://192.168.100.113:2000/images${toy.image_file_path}/Thumbnail.jpg`
+                thumbnail_url: `https://fulminous-noncontemporaneously-laci.ngrok-free.dev/images${toy.image_file_path}/Thumbnail.jpg`
             }))
         });
     });
@@ -109,7 +109,7 @@ router.get("/search_toys", (req, res) => {
             message: "Toys searched successfully",
             toys: results.map(toy => ({
                 ...toy,
-                thumbnail_url: `http://192.168.100.113:2000/images${toy.image_file_path}/Thumbnail.jpg`
+                thumbnail_url: `https://fulminous-noncontemporaneously-laci.ngrok-free.dev/images${toy.image_file_path}/${toy.thumbnail}`
             }))
         });
     });
