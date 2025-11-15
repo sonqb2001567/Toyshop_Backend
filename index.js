@@ -28,6 +28,6 @@ app.use("/api/admin", meshyaiRoutes);
 
 app.listen(2000, () => {
     console.log("Connected to server at 2000");
-    ngrok.connect({ addr: 2000, authtoken: process.env.NGROK_AUTHTOKEN })
-	.then(listener => console.log(`Ingress established at: ${listener.url()}`));
+    // ngrok.connect({ addr: 2000, authtoken: process.env.NGROK_AUTHTOKEN })
+	// .then(listener => console.log(`Ingress established at: ${listener.url()}`));
 });
